@@ -33,13 +33,14 @@ function Yoklama() {
   const [saved, setSaved] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
+  // attendance arrives one tick after mount (store hydrates from device storage),
+  // so this must re-run when it loads — otherwise saved marks never show up.
   useEffect(() => {
     const m: Record<string, Row> = {};
     for (const a of attendance.filter((x) => x.date === date)) m[a.studentId] = { vakitler: a.vakitler, ders: a.ders, durum: a.durum };
     setMarks(m);
-    setSaved(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
+  }, [date, attendance]);
 
   const d = new Date(date + "T12:00");
   const label = d.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" });
@@ -71,7 +72,7 @@ function Yoklama() {
             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
             <label className="relative whitespace-nowrap rounded-xl border border-border px-4 py-2 text-sm">
               {label}
-              <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} className="absolute inset-0 opacity-0" />
+              <input type="date" value={date} onChange={(e) => { if (e.target.value) { setDate(e.target.value); setSaved(false); } }} className="absolute inset-0 opacity-0" />
             </label>
           </div>
           <p className="mt-2 font-semibold capitalize text-primary">{day}</p>
