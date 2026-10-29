@@ -20,6 +20,10 @@ export const Route = createFileRoute("/yoklama")({
 });
 
 const cols = [...VAKITLER, "Ders"];
+const DURUMLAR = [
+  { k: "gec", l: "Geç" },
+  { k: "izinli", l: "İzinli" },
+] as const;
 type Row = { vakitler: string[]; ders: boolean; durum: AttendanceRow["durum"] };
 
 function Yoklama() {
@@ -29,13 +33,14 @@ function Yoklama() {
   const [saved, setSaved] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
+  // attendance arrives one tick after mount (store hydrates from device storage),
+  // so this must re-run when it loads — otherwise saved marks never show up.
   useEffect(() => {
     const m: Record<string, Row> = {};
     for (const a of attendance.filter((x) => x.date === date)) m[a.studentId] = { vakitler: a.vakitler, ders: a.ders, durum: a.durum };
     setMarks(m);
-    setSaved(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
+  }, [date, attendance]);
 
   const d = new Date(date + "T12:00");
   const label = d.toLocaleDateString("tr-TR", { day: "numeric", month: "short", year: "numeric" });
@@ -49,6 +54,7 @@ function Yoklama() {
     setSaved(false);
   };
   const setDurum = (id: string, durum: Row["durum"]) => { setMarks({ ...marks, [id]: { ...get(id), durum } }); setSaved(false); };
+  const toggleDurum = (id: string, k: "gec" | "izinli") => { const cur = get(id).durum; setDurum(id, cur === k ? "normal" : k); };
 
   const save = () => {
     saveDay(date, students.map((s) => ({ studentId: s.id, ...get(s.id) })));
@@ -66,7 +72,7 @@ function Yoklama() {
             <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
             <label className="relative whitespace-nowrap rounded-xl border border-border px-4 py-2 text-sm">
               {label}
-              <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} className="absolute inset-0 opacity-0" />
+              <input type="date" value={date} onChange={(e) => { if (e.target.value) { setDate(e.target.value); setSaved(false); } }} className="absolute inset-0 opacity-0" />
             </label>
           </div>
           <p className="mt-2 font-semibold capitalize text-primary">{day}</p>
@@ -88,30 +94,44 @@ function Yoklama() {
         </div>
       ) : (
         <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="flex items-center bg-brand-soft px-3 py-3 text-xs text-muted-foreground">
-            <span className="w-24 text-sm">Adı Soyadı</span>
-            <div className="grid flex-1 grid-cols-6 gap-1 text-center text-[10px]">{cols.map((c) => <span key={c}>{c}</span>)}</div>
+          <div className="flex items-center gap-2 bg-brand-soft px-3 py-2 text-muted-foreground">
+            <span className="min-w-0 flex-1 text-[11px] font-semibold">Adı Soyadı</span>
+            <div className="flex shrink-0 items-center gap-[3px]">
+              {cols.map((c) => <span key={c} className="w-6 text-center text-[8px] leading-none tracking-tight">{c}</span>)}
+              <span className="h-4 w-px shrink-0 bg-primary/20" />
+              {DURUMLAR.map((d) => <span key={d.k} className="w-8 text-center text-[8px] leading-none tracking-tight">{d.l}</span>)}
+            </div>
           </div>
           {students.map((s) => {
             const r = get(s.id);
             return (
-              <div key={s.id} className="border-t border-border px-3 py-3">
-                <div className="flex items-center">
-                  <div className="flex w-24 min-w-0 items-center gap-2"><Avatar name={s.name} size="sm" /><span className="truncate text-sm">{s.name}</span></div>
-                  <div className="grid flex-1 grid-cols-6 gap-1">
-                    {cols.map((c) => {
-                      const on = c === "Ders" ? r.ders : r.vakitler.includes(c);
-                      return (
-                        <button key={c} onClick={() => toggle(s.id, c)} aria-label={`${s.name} ${c}`} className={`flex h-8 items-center justify-center rounded-lg border border-border ${on ? "bg-primary text-primary-foreground" : "bg-surface"}`}>
-                          {on && <Check className="h-4 w-4" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="mt-2 flex justify-end gap-1.5 text-xs">
-                  {([["normal", "Normal"], ["gec", "Geç Kaldı"], ["izinli", "İzinli"]] as const).map(([k, l]) => (
-                    <button key={k} onClick={() => setDurum(s.id, k)} className={`rounded-full px-2.5 py-1 ${r.durum === k ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground"}`}>{l}</button>
+              <div key={s.id} className="flex items-center gap-2 border-t border-border px-3 py-2.5">
+                <div className="hidden min-w-0 flex-1 items-center gap-2 sm:flex"><Avatar name={s.name} size="xs" /><span className="min-w-0 flex-1 text-xs leading-snug">{s.name}</span></div>
+                <span className="min-w-0 flex-1 text-xs leading-snug sm:hidden">{s.name}</span>
+                <div className="flex shrink-0 items-center gap-[3px]">
+                  {cols.map((c) => {
+                    const on = c === "Ders" ? r.ders : r.vakitler.includes(c);
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => toggle(s.id, c)}
+                        aria-label={`${s.name} ${c}`}
+                        className={`flex h-7 w-6 shrink-0 items-center justify-center rounded-md border border-border transition-colors ${on ? "bg-primary text-primary-foreground" : "bg-surface"}`}
+                      >
+                        {on && <Check className="h-3.5 w-3.5" />}
+                      </button>
+                    );
+                  })}
+                  <span className="h-5 w-px shrink-0 bg-border" />
+                  {DURUMLAR.map((d) => (
+                    <button
+                      key={d.k}
+                      onClick={() => toggleDurum(s.id, d.k)}
+                      aria-label={`${s.name} ${d.l}`}
+                      className={`flex h-7 w-8 shrink-0 items-center justify-center rounded-md border border-border text-[8px] leading-none tracking-tight transition-colors ${r.durum === d.k ? "bg-primary text-primary-foreground" : "bg-surface text-muted-foreground"}`}
+                    >
+                      {d.l}
+                    </button>
                   ))}
                 </div>
               </div>
