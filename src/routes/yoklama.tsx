@@ -96,7 +96,7 @@ function Yoklama() {
           <div className="flex items-center gap-2 bg-brand-soft px-3 py-2 text-muted-foreground">
             <span className="min-w-0 flex-1 text-[11px] font-semibold">Adı Soyadı</span>
             <div className="flex shrink-0 items-center gap-[3px]">
-              {cols.map((c) => <span key={c} className="w-6 text-center text-[8px] leading-none tracking-tight sm:w-7">{c}</span>)}
+              {cols.map((c) => <span key={c} className="w-6 text-center text-[8px] leading-none tracking-tight">{c}</span>)}
               <span className="h-4 w-px shrink-0 bg-primary/20" />
               {DURUMLAR.map((d) => <span key={d.k} className="w-8 text-center text-[8px] leading-none tracking-tight">{d.l}</span>)}
             </div>
@@ -105,8 +105,8 @@ function Yoklama() {
             const r = get(s.id);
             return (
               <div key={s.id} className="flex items-center gap-2 border-t border-border px-3 py-2.5">
-                <div className="hidden min-w-0 flex-1 items-center gap-2 sm:flex"><Avatar name={s.name} size="xs" /><span className="min-w-0 flex-1 text-[13px] leading-snug">{s.name}</span></div>
-                <span className="min-w-0 flex-1 text-[13px] leading-snug sm:hidden">{s.name}</span>
+                <div className="hidden min-w-0 flex-1 items-center gap-2 sm:flex"><Avatar name={s.name} size="xs" /><span className="min-w-0 flex-1 text-xs leading-snug">{s.name}</span></div>
+                <span className="min-w-0 flex-1 text-xs leading-snug sm:hidden">{s.name}</span>
                 <div className="flex shrink-0 items-center gap-[3px]">
                   {cols.map((c) => {
                     const on = c === "Ders" ? r.ders : r.vakitler.includes(c);
@@ -115,7 +115,7 @@ function Yoklama() {
                         key={c}
                         onClick={() => toggle(s.id, c)}
                         aria-label={`${s.name} ${c}`}
-                        className={`flex h-7 w-6 shrink-0 items-center justify-center rounded-md border border-border transition-colors sm:w-7 ${on ? "bg-primary text-primary-foreground" : "bg-surface"}`}
+                        className={`flex h-7 w-6 shrink-0 items-center justify-center rounded-md border border-border transition-colors ${on ? "bg-primary text-primary-foreground" : "bg-surface"}`}
                       >
                         {on && <Check className="h-3.5 w-3.5" />}
                       </button>
