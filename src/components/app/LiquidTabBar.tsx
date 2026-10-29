@@ -50,7 +50,6 @@ export function LiquidTabBar({ tabs }: { tabs: readonly Tab[] }) {
                 to={to}
                 draggable={false}
                 aria-current={on ? "page" : undefined}
-                onPointerDown={() => i !== active && setTapped(i)}
                 onClick={() => i !== active && setTapped(i)}
                 className={`relative z-10 flex flex-col items-center gap-0.5 rounded-[1.6rem] py-2 text-[11px] transition-[color,transform] duration-200 active:scale-95 ${
                   on ? "font-semibold text-primary" : "text-muted-foreground"
