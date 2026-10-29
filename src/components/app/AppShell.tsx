@@ -48,9 +48,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 
-export function Avatar({ name, size = "lg" }: { name: string; size?: "lg" | "sm" }) {
+export function Avatar({ name, size = "lg" }: { name: string; size?: "lg" | "sm" | "xs" }) {
+  const box = size === "lg" ? "h-11 w-11 text-base" : size === "sm" ? "h-9 w-9 text-xs" : "h-7 w-7 text-[10px]";
   return (
-    <div className={`flex shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground ${size === "lg" ? "h-11 w-11 text-base" : "h-9 w-9 text-xs"}`}>
+    <div className={`flex shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground ${box}`}>
       {name.charAt(0).toUpperCase()}
     </div>
   );
