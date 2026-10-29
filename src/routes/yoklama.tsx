@@ -20,6 +20,10 @@ export const Route = createFileRoute("/yoklama")({
 });
 
 const cols = [...VAKITLER, "Ders"];
+const DURUMLAR = [
+  { k: "gec", l: "Geç" },
+  { k: "izinli", l: "İzinli" },
+] as const;
 type Row = { vakitler: string[]; ders: boolean; durum: AttendanceRow["durum"] };
 
 function Yoklama() {
